@@ -121,16 +121,50 @@ jobs:
             git checkout main || git checkout -b main origin/main
           fi
           
-          # Set Docker image in .env
-          echo "📝 Updating .env with Docker image..."
+          # Preserve or create .env file
+          echo "📝 Setting up .env file..."
           DOCKER_IMAGE_VAR="DOCKER_IMAGE=${DOCKER_USERNAME}/ser-backend:latest"
+          
+          # If .env doesn't exist, create it with defaults
           if [ ! -f .env ]; then
-            echo "$DOCKER_IMAGE_VAR" > .env
-          elif ! grep -q "DOCKER_IMAGE" .env 2>/dev/null; then
-            echo "$DOCKER_IMAGE_VAR" >> .env
+            echo "📝 Creating new .env file..."
+            cat > .env << ENV_EOF
+# Docker image
+$DOCKER_IMAGE_VAR
+
+# MongoDB (update with your actual credentials)
+MONGODB_URI=mongodb://admin:Artihcus%40123@localhost:27017/myapp?authSource=admin
+
+# Server
+PORT=5000
+NODE_ENV=production
+
+# JWT Secret (update with your actual secret)
+JWT_SECRET=my-super-secret-key-12345-change-this
+
+# Frontend URL
+FRONTEND_URL=https://fer-henna-omega.vercel.app
+ENV_EOF
           else
-            sed -i "s|DOCKER_IMAGE=.*|$DOCKER_IMAGE_VAR|" .env
+            # Update DOCKER_IMAGE in existing .env
+            if ! grep -q "DOCKER_IMAGE" .env 2>/dev/null; then
+              echo "$DOCKER_IMAGE_VAR" >> .env
+            else
+              sed -i "s|DOCKER_IMAGE=.*|$DOCKER_IMAGE_VAR|" .env
+            fi
+            # Ensure other required vars exist
+            if ! grep -q "^MONGODB_URI=" .env 2>/dev/null; then
+              echo "MONGODB_URI=mongodb://admin:Artihcus%40123@localhost:27017/myapp?authSource=admin" >> .env
+            fi
+            if ! grep -q "^JWT_SECRET=" .env 2>/dev/null; then
+              echo "JWT_SECRET=my-super-secret-key-12345-change-this" >> .env
+            fi
+            if ! grep -q "^FRONTEND_URL=" .env 2>/dev/null; then
+              echo "FRONTEND_URL=https://fer-henna-omega.vercel.app" >> .env
+            fi
           fi
+          
+          echo "✅ .env file configured"
           
           # Pull latest Docker image
           echo "🐳 Pulling latest Docker image from Docker Hub..."
