@@ -5,7 +5,7 @@ import dotenv from 'dotenv'
 import authRoutes from './routes/auth.js'
 
 // CI/CD auto-deployment: Builds Docker image, pushes to Docker Hub, deploys to server
-// Last auto-deployed: Testing with sudo permissions for .env file
+// Last auto-deployed: WORKING! Auto-deployment with force-recreate is functioning!
 dotenv.config()
 
 const app = express()
