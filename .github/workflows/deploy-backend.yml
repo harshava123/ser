@@ -57,8 +57,20 @@ jobs:
           # Create directory if it doesn't exist
           if [ ! -d /data/backend ]; then
             echo "🔧 Creating /data/backend directory..."
-            sudo mkdir -p /data/backend
-            sudo chown -R $USER:$USER /data/backend
+            if command -v sudo >/dev/null 2>&1; then
+              sudo mkdir -p /data/backend
+              sudo chown -R $USER:$USER /data/backend || sudo chown -R $(whoami):$(whoami) /data/backend
+            else
+              mkdir -p /data/backend
+            fi
+          fi
+          
+          # Verify directory exists and is accessible
+          if [ ! -d /data/backend ]; then
+            echo "❌ /data/backend directory does not exist and could not be created"
+            echo "📋 Checking /data directory:"
+            ls -la /data/ 2>/dev/null || echo "❌ /data directory does not exist"
+            exit 1
           fi
           
           cd /data/backend || { echo "❌ Failed to cd to /data/backend"; exit 1; }
