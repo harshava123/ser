@@ -1,28 +1,31 @@
-# Setup HTTPS for app.grahmind.com
+# Setup HTTPS for api.grahmind.com
 
 ## Your Setup
-- **Subdomain:** `app.grahmind.com`
+- **Subdomain:** `api.grahmind.com` ✅ (Already configured in DNS)
 - **Server IP:** `97.77.20.150`
 - **Backend Port:** `5000` (internal)
 
 ## Step-by-Step Guide
 
-### Step 1: Point Subdomain to Your Server IP
+### Step 1: Verify DNS is Configured ✅
 
-**In your DNS settings for `grahmind.com`:**
+**Your DNS is already set up!**
 
-Add an A record:
+You have:
 - **Type:** A
-- **Name:** `app` (or `app.grahmind.com`)
-- **Value:** `97.77.20.150`
-- **TTL:** 3600 (or default)
+- **Name:** `api`
+- **Value:** `97.77.20.150` ✅
+- **TTL:** 3600
 
-**Wait 5-10 minutes** for DNS to propagate. Test it:
+**Verify it's working:**
 
 ```bash
 # From your laptop
-ping app.grahmind.com
+ping api.grahmind.com
 # Should show: 97.77.20.150
+
+# Or check with nslookup
+nslookup api.grahmind.com
 ```
 
 ### Step 2: Install Certbot on Server
@@ -42,7 +45,7 @@ sudo apt install certbot python3-certbot-nginx -y
 
 ```bash
 # Get certificate for your subdomain
-sudo certbot --nginx -d app.grahmind.com
+sudo certbot --nginx -d api.grahmind.com
 
 # Follow the prompts:
 # 1. Enter your email address (for renewal notices)
@@ -79,17 +82,17 @@ It should look something like this:
 # HTTP - Redirect to HTTPS
 server {
     listen 80;
-    server_name app.grahmind.com;
+    server_name api.grahmind.com;
     return 301 https://$server_name$request_uri;
 }
 
 # HTTPS
 server {
     listen 443 ssl http2;
-    server_name app.grahmind.com;
+    server_name api.grahmind.com;
 
-    ssl_certificate /etc/letsencrypt/live/app.grahmind.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/app.grahmind.com/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/api.grahmind.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/api.grahmind.com/privkey.pem;
     
     # SSL configuration (added by certbot)
     include /etc/letsencrypt/options-ssl-nginx.conf;
@@ -154,7 +157,7 @@ sudo ufw status
 
 ```bash
 # Test from server
-curl https://app.grahmind.com/api/health
+curl https://api.grahmind.com/api/health
 
 # Should return:
 # {"status":"OK","message":"Server is running","timestamp":"..."}
@@ -174,7 +177,7 @@ curl https://app.grahmind.com/api/health
 2. Select your project: `fer-henna-omega`
 3. Go to **Settings** → **Environment Variables**
 4. Find `VITE_API_URL` and update it:
-   - **Value:** `https://app.grahmind.com`
+   - **Value:** `https://api.grahmind.com`
 5. **Save**
 6. **Redeploy** your frontend:
    - Go to **Deployments** tab
@@ -203,7 +206,7 @@ docker-compose restart
 
 1. **Test backend directly:**
    ```bash
-   curl https://app.grahmind.com/api/health
+   curl https://api.grahmind.com/api/health
    ```
 
 2. **Test from browser:**
@@ -236,10 +239,10 @@ sudo tail -f /var/log/nginx/error.log
 
 ```bash
 # Check DNS propagation
-nslookup app.grahmind.com
+nslookup api.grahmind.com
 
 # Or
-dig app.grahmind.com
+dig api.grahmind.com
 
 # Should show: 97.77.20.150
 ```
@@ -280,7 +283,7 @@ Certificates renew automatically every 90 days.
 ## Summary
 
 After setup:
-- ✅ Backend: `https://app.grahmind.com/api/*`
+- ✅ Backend: `https://api.grahmind.com/api/*`
 - ✅ Frontend: `https://fer-henna-omega.vercel.app`
 - ✅ No Mixed Content errors
 - ✅ SSL certificate auto-renews
