@@ -3,10 +3,12 @@ version: '3.8'
 services:
   # Backend API Service
   # Note: MongoDB is installed on the server (not in Docker)
-  # MongoDB credentials: admin / Admin@123
+  # MongoDB credentials: admin / Artihcus@123
   # Using host network mode to access MongoDB on localhost:27017
+  # Image is built in CI/CD and pushed to Docker Hub
   backend:
-    build: .
+    # Image from Docker Hub (set in .env or CI/CD will set it)
+    image: ${DOCKER_IMAGE:-harshava123/ser-backend:latest}
     container_name: backend
     restart: unless-stopped
     network_mode: host
@@ -18,4 +20,7 @@ services:
       - FRONTEND_URL=${FRONTEND_URL}
     volumes:
       - ./logs:/app/logs
+    # Fallback to build if image not available (for local development)
+    # Uncomment below and comment image above for local dev
+    # build: .
 
