@@ -5,7 +5,13 @@ on:
     branches:
       - main
     paths:
-      - 'backend/**'
+      - 'routes/**'
+      - 'models/**'
+      - 'server.js'
+      - 'package.json'
+      - 'Dockerfile'
+      - 'docker-compose.yml'
+      - '.github/workflows/**'
 
 jobs:
   deploy:
