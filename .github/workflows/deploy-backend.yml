@@ -51,18 +51,21 @@ jobs:
         ssh -o StrictHostKeyChecking=accept-new ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'ENDSSH'
         set -e
         cd /data/backend
-        echo "📥 Fetching latest code..."
-        git fetch origin --force
-        git reset --hard origin/main
-        echo "✅ Updated to: $(git log -1 --oneline)"
-        echo "🐳 Pulling Docker image..."
+        
+        echo "🐳 Pulling latest Docker image..."
         docker pull harshava123/ser-backend:latest
-        echo "🔄 Restarting container..."
-        docker-compose down
-        docker-compose up -d
+        
+        echo "🔄 Pulling and recreating containers..."
+        docker-compose pull
+        docker-compose up -d --force-recreate
+        
         sleep 5
         echo "✅ Deployment complete!"
+        echo "📦 Running containers:"
         docker-compose ps
+        
+        echo "🔍 Verifying image:"
+        docker inspect --format='{{.Id}} {{.Config.Image}}' backend | head -c 20
         ENDSSH
     
     - name: Verify deployment
@@ -72,7 +75,7 @@ jobs:
         cd /data/backend
         if docker-compose ps | grep -q "Up"; then
           echo "✅ Container is running"
-          curl -f http://localhost:5000/api/health && echo "✅ Health check passed"
+          curl -f http://127.0.0.1:5000/api/health && echo "✅ Health check passed"
         else
           echo "❌ Container not running"
           exit 1
