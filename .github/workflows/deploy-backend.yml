@@ -47,28 +47,9 @@ jobs:
         chmod 600 ~/.ssh/known_hosts
     
     - name: Deploy to server
-      run: |
-        ssh -o StrictHostKeyChecking=accept-new ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} '
-          cd /data/backend &&
-          echo "🐳 Pulling latest Docker image..." &&
-          docker pull harshava123/ser-backend:latest &&
-          echo "🧹 Cleaning up old containers..." &&
-          docker container prune -f &&
-          echo "🔄 Restarting with new image..." &&
-          docker-compose down --remove-orphans &&
-          docker-compose up -d &&
-          sleep 5 &&
-          echo "✅ Deployment complete!" &&
-          docker ps --format "table {{.Names}}\t{{.CreatedAt}}"
-        '
+      run: ssh -o StrictHostKeyChecking=accept-new ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} 'cd /data/backend && echo "Pulling image..." && docker pull harshava123/ser-backend:latest && docker container prune -f && docker-compose down --remove-orphans && docker-compose up -d && sleep 5 && echo "Deployed!" && docker ps'
     
     - name: Verify deployment
       run: |
         sleep 10
-        ssh -o StrictHostKeyChecking=accept-new ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} '
-          cd /data/backend &&
-          docker-compose ps | grep -q Up &&
-          echo "✅ Container is running" &&
-          curl -f http://127.0.0.1:5000/api/health &&
-          echo "✅ Health check passed"
-        '
+        ssh -o StrictHostKeyChecking=accept-new ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} 'cd /data/backend && docker-compose ps && curl -f http://127.0.0.1:5000/api/health'
