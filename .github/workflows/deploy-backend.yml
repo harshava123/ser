@@ -75,17 +75,23 @@ jobs:
           
           cd /data/backend || { echo "❌ Failed to cd to /data/backend"; exit 1; }
           echo "📍 Current directory: $(pwd)"
+          echo "📋 Directory contents:"
+          ls -la | head -10
+          echo ""
           
           # Check if git repo exists, if not initialize it
           if [ ! -d .git ]; then
-            echo "🔧 Initializing git repository..."
+            echo "⚠️  Git repo not found - initializing..."
             git init
             git remote add origin https://github.com/harshava123/ser.git || git remote set-url origin https://github.com/harshava123/ser.git
             git fetch origin
             git checkout -b main origin/main 2>/dev/null || git checkout main || git branch -m main 2>/dev/null || true
+            echo "✅ Git repo initialized"
           else
+            echo "✅ Git repo exists"
             echo "📍 Current commit: $(git log -1 --oneline 2>/dev/null || echo 'No commits')"
             echo "📍 Current branch: $(git branch --show-current 2>/dev/null || echo 'detached')"
+            echo "📍 Remote tracking: $(git branch -vv | grep '^\*' || echo 'No tracking')"
           fi
           
           echo "🔧 Updating git remote..."
