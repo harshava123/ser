@@ -128,23 +128,23 @@ jobs:
           # If .env doesn't exist, create it with defaults
           if [ ! -f .env ]; then
             echo "📝 Creating new .env file..."
-            cat > .env << ENV_EOF
-# Docker image
-$DOCKER_IMAGE_VAR
-
-# MongoDB (update with your actual credentials)
-MONGODB_URI=mongodb://admin:Artihcus%40123@localhost:27017/myapp?authSource=admin
-
-# Server
-PORT=5000
-NODE_ENV=production
-
-# JWT Secret (update with your actual secret)
-JWT_SECRET=my-super-secret-key-12345-change-this
-
-# Frontend URL
-FRONTEND_URL=https://fer-henna-omega.vercel.app
-ENV_EOF
+            {
+              echo "# Docker image"
+              echo "$DOCKER_IMAGE_VAR"
+              echo ""
+              echo "# MongoDB (update with your actual credentials)"
+              echo "MONGODB_URI=mongodb://admin:Artihcus%40123@localhost:27017/myapp?authSource=admin"
+              echo ""
+              echo "# Server"
+              echo "PORT=5000"
+              echo "NODE_ENV=production"
+              echo ""
+              echo "# JWT Secret (update with your actual secret)"
+              echo "JWT_SECRET=my-super-secret-key-12345-change-this"
+              echo ""
+              echo "# Frontend URL"
+              echo "FRONTEND_URL=https://fer-henna-omega.vercel.app"
+            } > .env
           else
             # Update DOCKER_IMAGE in existing .env
             if ! grep -q "DOCKER_IMAGE" .env 2>/dev/null; then
