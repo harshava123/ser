@@ -48,25 +48,18 @@ jobs:
     
     - name: Deploy to server
       run: |
-        ssh -o StrictHostKeyChecking=accept-new ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'ENDSSH'
-        set -e
-        cd /data/backend
-        
-        echo "🐳 Pulling latest Docker image..."
-        docker pull harshava123/ser-backend:latest
-        
-        echo "🧹 Cleaning up old containers..."
-        docker container prune -f
-        
-        echo "🔄 Restarting with new image..."
-        docker-compose down --remove-orphans
-        docker-compose up -d
-        
-        sleep 5
-        echo "✅ Deployment complete!"
-        echo "📦 Running containers:"
-        docker ps --format "{{.Names}} - Created: {{.CreatedAt}}"
-        ENDSSH
+        ssh -o StrictHostKeyChecking=accept-new ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "cd /data/backend && \
+        echo '🐳 Pulling latest Docker image...' && \
+        docker pull harshava123/ser-backend:latest && \
+        echo '🧹 Cleaning up old containers...' && \
+        docker container prune -f && \
+        echo '🔄 Restarting with new image...' && \
+        docker-compose down --remove-orphans && \
+        docker-compose up -d && \
+        sleep 5 && \
+        echo '✅ Deployment complete!' && \
+        echo '📦 Running containers:' && \
+        docker ps --format '{{.Names}} - Created: {{.CreatedAt}}'"
     
     - name: Verify deployment
       run: |
