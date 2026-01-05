@@ -50,11 +50,13 @@ jobs:
       env:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       run: |
-        ssh -o StrictHostKeyChecking=accept-new ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << EOF
+        ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} bash -s << 'DEPLOY_SCRIPT'
           set -e
-          cd /data/backend || exit 1
+          set -o pipefail
           
-          echo "📍 Current directory: \$(pwd)"
+          cd /data/backend || { echo "❌ Failed to cd to /data/backend"; exit 1; }
+          echo "📍 Current directory: $(pwd)"
+          echo "📍 Current commit: $(git log -1 --oneline 2>/dev/null || echo 'No git repo')"
           
           # Pull latest code for .env and docker-compose.yml
           if [ ! -d .git ]; then
@@ -65,22 +67,31 @@ jobs:
             git checkout -b main || git checkout main
           fi
           
+          echo "🔧 Updating git remote..."
           git remote set-url origin https://github.com/harshava123/ser.git
-          git fetch origin
-          git reset --hard origin/main
           
-          echo "✅ Code updated to: \$(git log -1 --oneline)"
+          echo "📥 Fetching latest from origin..."
+          git fetch origin || { echo "❌ Git fetch failed"; exit 1; }
           
-          # Set Docker image in .env if not exists
-          if ! grep -q "DOCKER_IMAGE" .env 2>/dev/null; then
-            echo "DOCKER_IMAGE=${DOCKER_USERNAME}/ser-backend:latest" >> .env
+          echo "🔄 Resetting to origin/main..."
+          git reset --hard origin/main || { echo "❌ Git reset failed"; exit 1; }
+          
+          echo "✅ Code updated to: $(git log -1 --oneline)"
+          
+          # Set Docker image in .env
+          echo "📝 Updating .env with Docker image..."
+          DOCKER_IMAGE_VAR="DOCKER_IMAGE=${DOCKER_USERNAME}/ser-backend:latest"
+          if [ ! -f .env ]; then
+            echo "$DOCKER_IMAGE_VAR" > .env
+          elif ! grep -q "DOCKER_IMAGE" .env 2>/dev/null; then
+            echo "$DOCKER_IMAGE_VAR" >> .env
           else
-            sed -i "s|DOCKER_IMAGE=.*|DOCKER_IMAGE=${DOCKER_USERNAME}/ser-backend:latest|" .env
+            sed -i "s|DOCKER_IMAGE=.*|$DOCKER_IMAGE_VAR|" .env
           fi
           
           # Pull latest Docker image
-          echo "🐳 Pulling latest Docker image..."
-          docker pull ${DOCKER_USERNAME}/ser-backend:latest || exit 1
+          echo "🐳 Pulling latest Docker image from Docker Hub..."
+          docker pull ${DOCKER_USERNAME}/ser-backend:latest || { echo "❌ Docker pull failed"; exit 1; }
           
           # Stop and remove old container
           echo "🛑 Stopping old container..."
@@ -91,15 +102,25 @@ jobs:
           docker image prune -f || true
           
           # Start new container
-          echo "🚀 Starting new container..."
-          DOCKER_IMAGE=${DOCKER_USERNAME}/ser-backend:latest docker-compose up -d || exit 1
+          echo "🚀 Starting new container with image: ${DOCKER_USERNAME}/ser-backend:latest"
+          DOCKER_IMAGE=${DOCKER_USERNAME}/ser-backend:latest docker-compose up -d || { echo "❌ Docker compose up failed"; exit 1; }
           
           sleep 5
           echo "📊 Container status:"
-          docker-compose ps
+          docker-compose ps || { echo "❌ Docker compose ps failed"; exit 1; }
+          
+          # Verify container is running
+          if ! docker-compose ps | grep -q "Up"; then
+            echo "❌ Container is not running!"
+            echo "📋 Recent logs:"
+            docker-compose logs --tail=50 backend
+            exit 1
+          fi
+          
+          echo "✅ Container is running!"
           echo "📋 Recent logs:"
-          docker-compose logs --tail=50 backend
-        EOF
+          docker-compose logs --tail=20 backend
+        DEPLOY_SCRIPT
 
     - name: Verify deployment
       run: |
