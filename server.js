@@ -19,7 +19,8 @@ app.use(cors({
     if (!origin) return callback(null, true)
     
     if (allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
-      callback(null, true)
+      // Explicitly return the origin to set the header correctly
+      callback(null, origin)
     } else {
       callback(new Error('Not allowed by CORS'))
     }
