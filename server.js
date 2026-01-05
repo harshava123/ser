@@ -5,7 +5,7 @@ import dotenv from 'dotenv'
 import authRoutes from './routes/auth.js'
 
 // CI/CD auto-deployment: Builds Docker image, pushes to Docker Hub, deploys to server
-// Last auto-deployed: Testing automatic deployment pipeline
+// Last auto-deployed: Testing automatic deployment pipeline - Second test
 dotenv.config()
 
 const app = express()
