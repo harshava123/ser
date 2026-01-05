@@ -9,7 +9,10 @@ dotenv.config()
 const app = express()
 
 // Middleware
-app.use(cors())
+app.use(cors({
+  origin: process.env.FRONTEND_URL || '*', // Allow Vercel frontend
+  credentials: true
+}))
 app.use(express.json())
 
 // Routes
@@ -17,7 +20,11 @@ app.use('/api/auth', authRoutes)
 
 // Health check route
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', message: 'Server is running' })
+  res.json({ 
+    status: 'OK', 
+    message: 'Server is running',
+    timestamp: new Date().toISOString()
+  })
 })
 
 // MongoDB connection
@@ -28,8 +35,9 @@ mongoose
   .connect(MONGODB_URI)
   .then(() => {
     console.log('✅ Connected to MongoDB')
-    app.listen(PORT, () => {
+    app.listen(PORT, '0.0.0.0', () => {
       console.log(`🚀 Server running on port ${PORT}`)
+      console.log(`📍 Access at http://0.0.0.0:${PORT}`)
     })
   })
   .catch((error) => {

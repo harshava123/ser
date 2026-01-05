@@ -1,10 +1,10 @@
 version: '3.8'
 
+# Docker Compose with host network mode
+# Use this when MongoDB is installed on the server (not in Docker)
+# MongoDB credentials: admin / Admin@123
+
 services:
-  # Backend API Service
-  # Note: MongoDB is installed on the server (not in Docker)
-  # MongoDB credentials: admin / Admin@123
-  # Using host network mode to access MongoDB on localhost:27017
   backend:
     build: .
     container_name: backend

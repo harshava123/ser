@@ -2,60 +2,67 @@
 
 Node.js backend with Express, MongoDB, and JWT authentication.
 
-## Setup Instructions
+## Server Information
+- **IP**: 97.77.20.150
+- **Port**: 5000
+- **Deployment Path**: `/data/backend`
+
+## Quick Start
 
 ### Local Development
 
-1. Install dependencies:
 ```bash
 npm install
-```
-
-2. Create `.env` file (copy from `.env.example`):
-```bash
 cp .env.example .env
-```
-
-3. Update `.env` with your MongoDB connection string:
-```
-MONGODB_URI=mongodb://localhost:27017/myapp
-PORT=5000
-JWT_SECRET=your-secret-key
-```
-
-4. Make sure MongoDB is running locally, then start the server:
-```bash
+# Edit .env with your settings
 npm run dev
 ```
 
-### Docker Setup
+### Production Deployment
 
-1. Build and run with Docker Compose:
 ```bash
+# On server
+cd /data/backend
 docker-compose up -d
 ```
 
-This will start both MongoDB and the backend server.
+## Environment Variables
 
-2. To stop:
-```bash
-docker-compose down
-```
+Create `.env` file:
 
-3. To view logs:
-```bash
-docker-compose logs -f
+```env
+MONGODB_URI=mongodb://localhost:27017/myapp
+PORT=5000
+JWT_SECRET=your-secret-key
+FRONTEND_URL=https://your-app.vercel.app
 ```
 
 ## API Endpoints
 
-- `POST /api/auth/signup` - Create new user account
+- `POST /api/auth/signup` - Create new user
 - `POST /api/auth/login` - Login user
 - `GET /api/health` - Health check
 
-## Environment Variables
+## Docker Commands
 
-- `MONGODB_URI` - MongoDB connection string
-- `PORT` - Server port (default: 5000)
-- `JWT_SECRET` - Secret key for JWT tokens
+```bash
+# Start
+docker-compose up -d
+
+# Stop
+docker-compose down
+
+# View logs
+docker-compose logs -f
+
+# Restart
+docker-compose restart
+
+# Rebuild
+docker-compose up -d --build
+```
+
+## Deployment
+
+See `../DEPLOYMENT_COMPLETE_GUIDE.md` for full deployment instructions.
 
