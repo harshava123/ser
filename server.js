@@ -15,13 +15,22 @@ const allowedOrigins = process.env.FRONTEND_URL
 
 app.use(cors({
   origin: function (origin, callback) {
+    // Debug logging
+    console.log('🔍 CORS check - Origin received:', origin)
+    console.log('🔍 CORS check - Allowed origins:', allowedOrigins)
+    
     // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true)
+    if (!origin) {
+      console.log('🔍 CORS check - No origin, allowing')
+      return callback(null, true)
+    }
     
     if (allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
       // Explicitly return the origin to set the header correctly
+      console.log('✅ CORS check - Origin allowed, returning:', origin)
       callback(null, origin)
     } else {
+      console.log('❌ CORS check - Origin not allowed:', origin)
       callback(new Error('Not allowed by CORS'))
     }
   },
