@@ -288,8 +288,6 @@ jobs:
         DEPLOY_SCRIPT
     
     - name: Verify deployment
-
-    - name: Verify deployment
       run: |
         echo "Waiting for backend to be ready..."
         sleep 15
