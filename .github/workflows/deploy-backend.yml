@@ -55,17 +55,17 @@ jobs:
         echo "🐳 Pulling latest Docker image..."
         docker pull harshava123/ser-backend:latest
         
-        echo "🔄 Pulling and recreating containers..."
-        docker-compose pull
-        docker-compose up -d --force-recreate
+        echo "🧹 Cleaning up old containers..."
+        docker container prune -f
+        
+        echo "🔄 Restarting with new image..."
+        docker-compose down --remove-orphans
+        docker-compose up -d
         
         sleep 5
         echo "✅ Deployment complete!"
         echo "📦 Running containers:"
-        docker-compose ps
-        
-        echo "🔍 Verifying image:"
-        docker inspect --format='{{.Id}} {{.Config.Image}}' backend | head -c 20
+        docker ps --format "{{.Names}} - Created: {{.CreatedAt}}"
         ENDSSH
     
     - name: Verify deployment
