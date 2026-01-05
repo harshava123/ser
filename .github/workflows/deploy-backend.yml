@@ -161,6 +161,9 @@ jobs:
           echo "📝 Setting up .env file..."
           DOCKER_IMAGE_VAR="DOCKER_IMAGE=${DOCKER_USERNAME}/ser-backend:latest"
           
+          # Create temporary .env file in /tmp first
+          TMP_ENV_FILE="/tmp/backend-env-$$"
+          
           # If .env doesn't exist, create it with defaults
           if [ ! -f .env ]; then
             echo "📝 Creating new .env file..."
@@ -180,23 +183,49 @@ jobs:
               echo ""
               echo "# Frontend URL"
               echo "FRONTEND_URL=https://fer-henna-omega.vercel.app"
-            } > .env
-          else
-            # Update DOCKER_IMAGE in existing .env
-            if ! grep -q "DOCKER_IMAGE" .env 2>/dev/null; then
-              echo "$DOCKER_IMAGE_VAR" >> .env
+            } > "$TMP_ENV_FILE"
+            
+            # Copy to destination with sudo if needed
+            if [ "$NEED_SUDO" = true ]; then
+              sudo mv "$TMP_ENV_FILE" .env
+              sudo chmod 644 .env
             else
-              sed -i "s|DOCKER_IMAGE=.*|$DOCKER_IMAGE_VAR|" .env
+              mv "$TMP_ENV_FILE" .env
             fi
+          else
+            echo "📝 Updating existing .env file..."
+            # Copy existing .env to temp file
+            if [ "$NEED_SUDO" = true ]; then
+              sudo cp .env "$TMP_ENV_FILE"
+              sudo chown $CURRENT_USER "$TMP_ENV_FILE"
+            else
+              cp .env "$TMP_ENV_FILE"
+            fi
+            
+            # Update DOCKER_IMAGE in temp file
+            if ! grep -q "DOCKER_IMAGE" "$TMP_ENV_FILE" 2>/dev/null; then
+              echo "$DOCKER_IMAGE_VAR" >> "$TMP_ENV_FILE"
+            else
+              sed -i "s|DOCKER_IMAGE=.*|$DOCKER_IMAGE_VAR|" "$TMP_ENV_FILE"
+            fi
+            
             # Ensure other required vars exist
-            if ! grep -q "^MONGODB_URI=" .env 2>/dev/null; then
-              echo "MONGODB_URI=mongodb://admin:Artihcus%40123@localhost:27017/myapp?authSource=admin" >> .env
+            if ! grep -q "^MONGODB_URI=" "$TMP_ENV_FILE" 2>/dev/null; then
+              echo "MONGODB_URI=mongodb://admin:Artihcus%40123@localhost:27017/myapp?authSource=admin" >> "$TMP_ENV_FILE"
             fi
-            if ! grep -q "^JWT_SECRET=" .env 2>/dev/null; then
-              echo "JWT_SECRET=my-super-secret-key-12345-change-this" >> .env
+            if ! grep -q "^JWT_SECRET=" "$TMP_ENV_FILE" 2>/dev/null; then
+              echo "JWT_SECRET=my-super-secret-key-12345-change-this" >> "$TMP_ENV_FILE"
             fi
-            if ! grep -q "^FRONTEND_URL=" .env 2>/dev/null; then
-              echo "FRONTEND_URL=https://fer-henna-omega.vercel.app" >> .env
+            if ! grep -q "^FRONTEND_URL=" "$TMP_ENV_FILE" 2>/dev/null; then
+              echo "FRONTEND_URL=https://fer-henna-omega.vercel.app" >> "$TMP_ENV_FILE"
+            fi
+            
+            # Copy back to destination with sudo if needed
+            if [ "$NEED_SUDO" = true ]; then
+              sudo mv "$TMP_ENV_FILE" .env
+              sudo chmod 644 .env
+            else
+              mv "$TMP_ENV_FILE" .env
             fi
           fi
           
