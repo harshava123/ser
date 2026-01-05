@@ -45,11 +45,11 @@ jobs:
         mkdir -p ~/.ssh
         ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
         chmod 600 ~/.ssh/known_hosts
-
-        - name: Deploy to server
-          env:
-            DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          run: |
+    
+    - name: Deploy to server
+      env:
+        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      run: |
             ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} bash -s << 'DEPLOY_SCRIPT'
               set -e
               set -o pipefail
