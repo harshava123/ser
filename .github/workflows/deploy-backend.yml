@@ -54,14 +54,22 @@ jobs:
           set -e
           set -o pipefail
           
-          # Create directory if it doesn't exist
+          # Check if directory exists and verify ownership
           if [ ! -d /data/backend ]; then
             echo "🔧 Creating /data/backend directory..."
             if command -v sudo >/dev/null 2>&1; then
               sudo mkdir -p /data/backend
-              sudo chown -R $USER:$USER /data/backend || sudo chown -R $(whoami):$(whoami) /data/backend
+              # Set ownership to root (or current user if root)
+              sudo chown -R root:root /data/backend
             else
               mkdir -p /data/backend
+            fi
+          else
+            echo "✅ /data/backend directory exists"
+            echo "📋 Current ownership: $(stat -c '%U:%G' /data/backend 2>/dev/null || echo 'unknown')"
+            # Ensure we have access - if owned by root and we're not root, use sudo
+            if [ "$(stat -c '%U' /data/backend 2>/dev/null)" = "root" ] && [ "$(id -u)" != "0" ]; then
+              echo "⚠️  Directory owned by root, but we're not root - this might cause issues"
             fi
           fi
           
@@ -75,8 +83,10 @@ jobs:
           
           cd /data/backend || { echo "❌ Failed to cd to /data/backend"; exit 1; }
           echo "📍 Current directory: $(pwd)"
+          echo "📍 Current user: $(whoami)"
+          echo "📍 Directory owner: $(stat -c '%U:%G' . 2>/dev/null || echo 'unknown')"
           echo "📋 Directory contents:"
-          ls -la | head -10
+          ls -la | head -15
           echo ""
           
           # Check if git repo exists, if not initialize it
