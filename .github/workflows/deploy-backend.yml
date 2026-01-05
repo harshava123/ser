@@ -4,14 +4,6 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'routes/**'
-      - 'models/**'
-      - 'server.js'
-      - 'package.json'
-      - 'Dockerfile'
-      - 'docker-compose.yml'
-      - '.github/workflows/**'
 
 jobs:
   deploy:
