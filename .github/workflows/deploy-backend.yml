@@ -28,11 +28,13 @@ jobs:
 
     - name: Add server to known hosts
       run: |
+        mkdir -p ~/.ssh
         ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+        chmod 600 ~/.ssh/known_hosts
 
     - name: Deploy to server
       run: |
-        ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+        ssh -o StrictHostKeyChecking=accept-new ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
           cd /data/backend
           git pull origin main
           docker-compose down
