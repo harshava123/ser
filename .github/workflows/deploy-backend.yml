@@ -27,6 +27,7 @@ jobs:
     - name: Deploy to server
       run: |
         ssh -o StrictHostKeyChecking=accept-new ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+          set -e  # Exit on error
           cd /data/backend
           # Initialize git if not already a repository
           if [ ! -d .git ]; then
@@ -35,7 +36,16 @@ jobs:
             git fetch origin
             git checkout -b main || git checkout main
           fi
-          git pull origin main
+          # Ensure remote is correct
+          git remote set-url origin https://github.com/harshava123/ser.git
+          # Fetch latest
+          git fetch origin
+          # Reset to match remote exactly (force update)
+          git reset --hard origin/main
+          # Pull latest code
+          git pull origin main || git reset --hard origin/main
+          echo "✅ Code updated to latest commit: $(git log -1 --oneline)"
+          # Rebuild and restart
           docker-compose down
           docker-compose build --no-cache
           docker-compose up -d
