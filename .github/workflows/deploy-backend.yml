@@ -98,13 +98,20 @@ jobs:
           echo "📋 Available commits on origin/main:"
           git log --oneline origin/main -5
           
+          # Get expected commit before reset
+          EXPECTED_COMMIT=$(git log -1 --oneline origin/main)
+          echo "🎯 Target commit: $EXPECTED_COMMIT"
+          
           echo "🔄 Resetting to origin/main..."
           git reset --hard origin/main || { echo "❌ Git reset failed"; exit 1; }
           
           # Force update to ensure we're on latest
           echo "🔄 Force updating to latest..."
-          git fetch origin --force
-          git reset --hard origin/main
+          git fetch origin --force || { echo "❌ Force fetch failed"; exit 1; }
+          git reset --hard origin/main || { echo "❌ Force reset failed"; exit 1; }
+          
+          # Ensure we're tracking origin/main
+          git branch --set-upstream-to=origin/main main 2>/dev/null || true
           
           # Verify we're on the correct commit
           CURRENT_COMMIT=$(git log -1 --oneline)
