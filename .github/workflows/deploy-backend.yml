@@ -162,7 +162,13 @@ jobs:
         sleep 15
         ssh -o StrictHostKeyChecking=accept-new ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
           cd /data/backend
-          if docker-compose ps | grep -q "Up"; then
+          # Detect docker-compose command
+          if command -v docker-compose >/dev/null 2>&1; then
+            DOCKER_COMPOSE_CMD="docker-compose"
+          else
+            DOCKER_COMPOSE_CMD="docker compose"
+          fi
+          if $DOCKER_COMPOSE_CMD ps | grep -q "Up"; then
             echo "✅ Backend container is running"
             echo "Testing health endpoint..."
             curl -f http://localhost:5000/api/health && echo "✅ Backend health check passed"
