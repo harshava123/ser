@@ -75,15 +75,17 @@ jobs:
           
           cd /data/backend || { echo "❌ Failed to cd to /data/backend"; exit 1; }
           echo "📍 Current directory: $(pwd)"
-          echo "📍 Current commit: $(git log -1 --oneline 2>/dev/null || echo 'No git repo')"
           
-          # Pull latest code for .env and docker-compose.yml
+          # Check if git repo exists, if not initialize it
           if [ ! -d .git ]; then
             echo "🔧 Initializing git repository..."
             git init
             git remote add origin https://github.com/harshava123/ser.git || git remote set-url origin https://github.com/harshava123/ser.git
             git fetch origin
-            git checkout -b main || git checkout main
+            git checkout -b main origin/main 2>/dev/null || git checkout main || git branch -m main 2>/dev/null || true
+          else
+            echo "📍 Current commit: $(git log -1 --oneline 2>/dev/null || echo 'No commits')"
+            echo "📍 Current branch: $(git branch --show-current 2>/dev/null || echo 'detached')"
           fi
           
           echo "🔧 Updating git remote..."
