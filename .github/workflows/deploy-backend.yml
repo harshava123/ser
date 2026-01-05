@@ -95,7 +95,31 @@ jobs:
           echo "🔄 Resetting to origin/main..."
           git reset --hard origin/main || { echo "❌ Git reset failed"; exit 1; }
           
-          echo "✅ Code updated to: $(git log -1 --oneline)"
+          # Verify we're on the correct commit
+          CURRENT_COMMIT=$(git log -1 --oneline)
+          EXPECTED_COMMIT=$(git log -1 --oneline origin/main)
+          
+          echo "✅ Code updated to: $CURRENT_COMMIT"
+          echo "📋 Expected commit: $EXPECTED_COMMIT"
+          
+          # Verify we're actually on the latest commit
+          if [ "$CURRENT_COMMIT" != "$EXPECTED_COMMIT" ]; then
+            echo "❌ WARNING: Current commit ($CURRENT_COMMIT) doesn't match expected ($EXPECTED_COMMIT)"
+            echo "🔄 Force updating..."
+            git fetch origin --force
+            git reset --hard origin/main
+            CURRENT_COMMIT=$(git log -1 --oneline)
+            echo "✅ After force update: $CURRENT_COMMIT"
+          fi
+          
+          # Verify we're on main branch
+          CURRENT_BRANCH=$(git branch --show-current 2>/dev/null || git rev-parse --abbrev-ref HEAD)
+          echo "📍 Current branch: $CURRENT_BRANCH"
+          
+          if [ "$CURRENT_BRANCH" != "main" ]; then
+            echo "🔄 Switching to main branch..."
+            git checkout main || git checkout -b main origin/main
+          fi
           
           # Set Docker image in .env
           echo "📝 Updating .env with Docker image..."
