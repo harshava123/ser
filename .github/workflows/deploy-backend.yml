@@ -50,17 +50,17 @@ jobs:
       env:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       run: |
-            ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} bash -s << 'DEPLOY_SCRIPT'
-              set -e
-              set -o pipefail
-              
-              echo "=========================================="
-              echo "🚀 STARTING DEPLOYMENT"
-              echo "=========================================="
-              echo "📍 Connected as: $(whoami)"
-              echo "📍 Server: $(hostname)"
-              echo "📍 Time: $(date)"
-              echo ""
+        ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} bash -s << 'DEPLOY_SCRIPT'
+          set -e
+          set -o pipefail
+          
+          echo "=========================================="
+          echo "🚀 STARTING DEPLOYMENT"
+          echo "=========================================="
+          echo "📍 Connected as: $(whoami)"
+          echo "📍 Server: $(hostname)"
+          echo "📍 Time: $(date)"
+          echo ""
           
           # Check if directory exists and handle permissions
           if [ ! -d /data/backend ]; then
@@ -286,6 +286,8 @@ jobs:
           echo "📋 Recent logs:"
           $DOCKER_COMPOSE_CMD logs --tail=20 backend
         DEPLOY_SCRIPT
+    
+    - name: Verify deployment
 
     - name: Verify deployment
       run: |
