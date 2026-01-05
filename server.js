@@ -4,7 +4,7 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import authRoutes from './routes/auth.js'
 
-// CI/CD auto-deployment enabled - triggers on push to main
+// CI/CD auto-deployment: Builds Docker image, pushes to Docker Hub, deploys to server
 dotenv.config()
 
 const app = express()
