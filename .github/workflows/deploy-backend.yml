@@ -1,0 +1,42 @@
+name: Deploy Backend to Server
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Setup SSH
+      uses: webfactory/ssh-agent@v0.7.0
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+    - name: Add server to known hosts
+      run: |
+        ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+
+    - name: Deploy to server
+      run: |
+        ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+          cd /data/backend
+          git pull origin main
+          docker-compose down
+          docker-compose build --no-cache
+          docker-compose up -d
+          docker-compose logs --tail=50
+        EOF
+
+    - name: Health check
+      run: |
+        sleep 10
+        curl -f http://${{ secrets.SERVER_IP }}:5000/api/health || exit 1
+
