@@ -4,7 +4,7 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import authRoutes from './routes/auth.js'
 
-// Auto-deploy test: CI/CD triggers on push to main
+// CI/CD auto-deployment enabled - triggers on push to main
 dotenv.config()
 
 const app = express()
