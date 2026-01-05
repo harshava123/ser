@@ -112,9 +112,24 @@ jobs:
           echo "🐳 Pulling latest Docker image from Docker Hub..."
           docker pull ${DOCKER_USERNAME}/ser-backend:latest || { echo "❌ Docker pull failed"; exit 1; }
           
+          # Detect docker-compose command (V1 or V2)
+          if command -v docker-compose >/dev/null 2>&1; then
+            DOCKER_COMPOSE_CMD="docker-compose"
+          elif docker compose version >/dev/null 2>&1; then
+            DOCKER_COMPOSE_CMD="docker compose"
+          else
+            echo "❌ docker-compose not found. Installing..."
+            # Try to install docker-compose
+            sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+            sudo chmod +x /usr/local/bin/docker-compose
+            DOCKER_COMPOSE_CMD="docker-compose"
+          fi
+          
+          echo "🔧 Using: $DOCKER_COMPOSE_CMD"
+          
           # Stop and remove old container
           echo "🛑 Stopping old container..."
-          docker-compose down || true
+          $DOCKER_COMPOSE_CMD down || true
           
           # Remove old images to save space
           echo "🧹 Cleaning up old images..."
@@ -122,23 +137,23 @@ jobs:
           
           # Start new container
           echo "🚀 Starting new container with image: ${DOCKER_USERNAME}/ser-backend:latest"
-          DOCKER_IMAGE=${DOCKER_USERNAME}/ser-backend:latest docker-compose up -d || { echo "❌ Docker compose up failed"; exit 1; }
+          DOCKER_IMAGE=${DOCKER_USERNAME}/ser-backend:latest $DOCKER_COMPOSE_CMD up -d || { echo "❌ Docker compose up failed"; exit 1; }
           
           sleep 5
           echo "📊 Container status:"
-          docker-compose ps || { echo "❌ Docker compose ps failed"; exit 1; }
+          $DOCKER_COMPOSE_CMD ps || { echo "❌ Docker compose ps failed"; exit 1; }
           
           # Verify container is running
-          if ! docker-compose ps | grep -q "Up"; then
+          if ! $DOCKER_COMPOSE_CMD ps | grep -q "Up"; then
             echo "❌ Container is not running!"
             echo "📋 Recent logs:"
-            docker-compose logs --tail=50 backend
+            $DOCKER_COMPOSE_CMD logs --tail=50 backend
             exit 1
           fi
           
           echo "✅ Container is running!"
           echo "📋 Recent logs:"
-          docker-compose logs --tail=20 backend
+          $DOCKER_COMPOSE_CMD logs --tail=20 backend
         DEPLOY_SCRIPT
 
     - name: Verify deployment
