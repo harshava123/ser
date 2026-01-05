@@ -48,7 +48,7 @@ jobs:
     
     - name: Deploy to server
       run: |
-        ssh -o StrictHostKeyChecking=accept-new ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} 'bash -s' << 'ENDSSH'
+        ssh -o StrictHostKeyChecking=accept-new ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'ENDSSH'
         set -e
         cd /data/backend
         echo "📥 Fetching latest code..."
@@ -68,7 +68,7 @@ jobs:
     - name: Verify deployment
       run: |
         sleep 10
-        ssh -o StrictHostKeyChecking=accept-new ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} 'bash -s' << 'ENDSSH'
+        ssh -o StrictHostKeyChecking=accept-new ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'ENDSSH'
         cd /data/backend
         if docker-compose ps | grep -q "Up"; then
           echo "✅ Container is running"
