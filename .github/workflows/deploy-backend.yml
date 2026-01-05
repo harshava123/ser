@@ -46,13 +46,13 @@ jobs:
         ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
         chmod 600 ~/.ssh/known_hosts
     
+    - name: Copy deploy script to server
+      run: scp -o StrictHostKeyChecking=accept-new deploy.sh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/tmp/deploy.sh
+    
     - name: Deploy to server
-      run: |
-        ssh -o StrictHostKeyChecking=accept-new ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} \
-          "cd /data/backend && docker pull harshava123/ser-backend:latest && docker container prune -f && docker-compose down --remove-orphans && docker-compose up -d && sleep 5 && docker ps"
+      run: ssh -o StrictHostKeyChecking=accept-new ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "bash /tmp/deploy.sh"
     
     - name: Verify deployment
       run: |
         sleep 10
-        ssh -o StrictHostKeyChecking=accept-new ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} \
-          "cd /data/backend && docker-compose ps && curl -f http://127.0.0.1:5000/api/health"
+        ssh -o StrictHostKeyChecking=accept-new ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "docker ps && curl -f http://127.0.0.1:5000/api/health"
