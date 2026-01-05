@@ -54,6 +54,13 @@ jobs:
           set -e
           set -o pipefail
           
+          # Create directory if it doesn't exist
+          if [ ! -d /data/backend ]; then
+            echo "🔧 Creating /data/backend directory..."
+            sudo mkdir -p /data/backend
+            sudo chown -R $USER:$USER /data/backend
+          fi
+          
           cd /data/backend || { echo "❌ Failed to cd to /data/backend"; exit 1; }
           echo "📍 Current directory: $(pwd)"
           echo "📍 Current commit: $(git log -1 --oneline 2>/dev/null || echo 'No git repo')"
