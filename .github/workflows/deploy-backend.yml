@@ -88,12 +88,21 @@ jobs:
           
           echo "🔧 Updating git remote..."
           git remote set-url origin https://github.com/harshava123/ser.git
+          git remote -v
           
-          echo "📥 Fetching latest from origin..."
-          git fetch origin || { echo "❌ Git fetch failed"; exit 1; }
+          echo "📥 Fetching latest from origin (with prune)..."
+          git fetch origin --prune --force || { echo "❌ Git fetch failed"; exit 1; }
+          
+          echo "📋 Available commits on origin/main:"
+          git log --oneline origin/main -5
           
           echo "🔄 Resetting to origin/main..."
           git reset --hard origin/main || { echo "❌ Git reset failed"; exit 1; }
+          
+          # Force update to ensure we're on latest
+          echo "🔄 Force updating to latest..."
+          git fetch origin --force
+          git reset --hard origin/main
           
           # Verify we're on the correct commit
           CURRENT_COMMIT=$(git log -1 --oneline)
@@ -102,15 +111,17 @@ jobs:
           echo "✅ Code updated to: $CURRENT_COMMIT"
           echo "📋 Expected commit: $EXPECTED_COMMIT"
           
-          # Verify we're actually on the latest commit
+          # Final verification
           if [ "$CURRENT_COMMIT" != "$EXPECTED_COMMIT" ]; then
-            echo "❌ WARNING: Current commit ($CURRENT_COMMIT) doesn't match expected ($EXPECTED_COMMIT)"
-            echo "🔄 Force updating..."
-            git fetch origin --force
-            git reset --hard origin/main
-            CURRENT_COMMIT=$(git log -1 --oneline)
-            echo "✅ After force update: $CURRENT_COMMIT"
+            echo "❌ ERROR: Current commit ($CURRENT_COMMIT) doesn't match expected ($EXPECTED_COMMIT)"
+            echo "📋 Current branch info:"
+            git branch -vv
+            echo "📋 Remote info:"
+            git remote show origin
+            exit 1
           fi
+          
+          echo "✅ Verified: On correct commit!"
           
           # Verify we're on main branch
           CURRENT_BRANCH=$(git branch --show-current 2>/dev/null || git rev-parse --abbrev-ref HEAD)
