@@ -49,9 +49,9 @@ jobs:
       run: |
         echo "Waiting for backend to be ready..."
         sleep 15
-        echo "Testing health endpoint on port 5000..."
-        curl -f http://${{ secrets.SERVER_IP }}:5000/api/health || {
-          echo "Port 5000 failed, trying port 80..."
-          curl -f http://${{ secrets.SERVER_IP }}/api/health || exit 1
-        }
+        echo "Testing health endpoint on port 80..."
+        if ! curl -f http://${{ secrets.SERVER_IP }}/api/health; then
+          echo "Port 80 failed, trying direct port 5000..."
+          curl -f http://${{ secrets.SERVER_IP }}:5000/api/health || exit 1
+        fi
 
