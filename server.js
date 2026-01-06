@@ -5,7 +5,7 @@ import dotenv from 'dotenv'
 import authRoutes from './routes/auth.js'
 
 // CI/CD auto-deployment: Builds Docker image, pushes to Docker Hub, deploys to server
-// Last auto-deployed: FIXED! Using docker container prune + down --remove-orphans
+// Last auto-deployed: SUCCESS! Heredoc with EOF - Auto-deployment fully working!
 dotenv.config()
 
 const app = express()
@@ -46,8 +46,9 @@ app.use('/api/auth', authRoutes)
 app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'OK', 
-    message: 'Server is running',
-    timestamp: new Date().toISOString()
+    message: 'Server is running - CI/CD Auto-Deploy Working!',
+    timestamp: new Date().toISOString(),
+    version: 'v1.0.1'
   })
 })
 
