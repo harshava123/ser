@@ -47,12 +47,23 @@ jobs:
         chmod 600 ~/.ssh/known_hosts
     
     - name: Copy deploy script to server
-      run: scp -o StrictHostKeyChecking=accept-new deploy.sh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/tmp/
+      env:
+        SERVER_USER: ${{ secrets.SERVER_USER }}
+        SERVER_IP: ${{ secrets.SERVER_IP }}
+      run: |
+        scp -o StrictHostKeyChecking=accept-new deploy.sh ${SERVER_USER}@${SERVER_IP}:/tmp/
     
     - name: Deploy to server
-      run: ssh -o StrictHostKeyChecking=accept-new ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "bash /tmp/deploy.sh"
+      env:
+        SERVER_USER: ${{ secrets.SERVER_USER }}
+        SERVER_IP: ${{ secrets.SERVER_IP }}
+      run: |
+        ssh -o StrictHostKeyChecking=accept-new ${SERVER_USER}@${SERVER_IP} "bash /tmp/deploy.sh"
     
     - name: Verify deployment
+      env:
+        SERVER_USER: ${{ secrets.SERVER_USER }}
+        SERVER_IP: ${{ secrets.SERVER_IP }}
       run: |
         sleep 10
-        ssh -o StrictHostKeyChecking=accept-new ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "docker ps && curl -f http://127.0.0.1:5000/api/health"
+        ssh -o StrictHostKeyChecking=accept-new ${SERVER_USER}@${SERVER_IP} "docker ps && curl -f http://127.0.0.1:5000/api/health"
