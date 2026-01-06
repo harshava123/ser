@@ -46,19 +46,20 @@ jobs:
         ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
         chmod 600 ~/.ssh/known_hosts
     
-    - name: Copy deploy script to server
-      env:
-        SERVER_USER: ${{ secrets.SERVER_USER }}
-        SERVER_IP: ${{ secrets.SERVER_IP }}
-      run: |
-        scp -o StrictHostKeyChecking=accept-new deploy.sh ${SERVER_USER}@${SERVER_IP}:/tmp/
-    
     - name: Deploy to server
       env:
         SERVER_USER: ${{ secrets.SERVER_USER }}
         SERVER_IP: ${{ secrets.SERVER_IP }}
       run: |
-        ssh -o StrictHostKeyChecking=accept-new ${SERVER_USER}@${SERVER_IP} "bash /tmp/deploy.sh"
+        ssh -o StrictHostKeyChecking=accept-new ${SERVER_USER}@${SERVER_IP} << 'EOF'
+        cd /data/backend
+        docker pull harshava123/ser-backend:latest
+        docker container prune -f
+        docker-compose down --remove-orphans
+        docker-compose up -d
+        sleep 5
+        docker ps
+        EOF
     
     - name: Verify deployment
       env:
